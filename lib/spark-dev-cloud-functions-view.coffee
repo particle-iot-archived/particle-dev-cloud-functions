@@ -114,6 +114,9 @@ class CloudFunctionsView extends View
     params = row.find('.editor:eq(0)').view().getText()
     promise = spark.callFunction SettingsHelper.getLocal('current_core'), functionName, params
     promise.done (e) =>
+      if !$.contains(document.documentElement, row[0])
+        return
+
       @setRowEnabled row, true
 
       if !!e.ok
@@ -124,6 +127,9 @@ class CloudFunctionsView extends View
 
         dfd.resolve e.return_value
     , (e) =>
+      if !$.contains(document.documentElement, row[0])
+        return
+        
       @setRowEnabled row, true
       row.find('.editor:eq(1)').view().addClass 'icon icon-issue-opened'
 
