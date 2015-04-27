@@ -1,48 +1,47 @@
-{View, TextEditorView} = require 'atom'
-{Emitter} = require 'event-kit'
+{Disposable, CompositeDisposable} = require 'atom'
+{View} = require 'atom-space-pen-views'
+whenjs = require 'when'
 $ = null
 $$ = null
-whenjs = require 'when'
 SettingsHelper = null
 Subscriber = null
 spark = null
 sparkDev = null
+MiniEditor = null
 
 module.exports =
 class CloudFunctionsView extends View
   @content: ->
     @div id: 'spark-dev-cloud-functions-container', =>
-      @div id: 'spark-dev-cloud-functions', outlet: 'functions'
+      @div id: 'spark-dev-cloud-functions', outlet: 'functionsList'
 
   initialize: (serializeState, mainModule) ->
     sparkDev = mainModule
 
   setup: ->
-    {$, $$} = require 'atom'
-    {Subscriber} = require 'emissary'
+    {$, $$} = require 'atom-space-pen-views'
+    {MiniEditor} = require 'spark-dev-views'
 
     SettingsHelper = sparkDev.SettingsHelper
     spark = require 'spark'
     spark.login { accessToken: SettingsHelper.get('access_token') }
 
-    @emitter = new Emitter
-    @subscriber = new Subscriber()
-    # Show some progress when core's status is downloaded
-    @subscriber.subscribeToCommand atom.workspaceView, 'spark-dev:update-core-status', =>
-      @functions.empty()
-      @addClass 'loading'
+    @disposables = new CompositeDisposable
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'spark-dev:core-status-updated', =>
-      # Refresh UI when current core changes
-      @listFunctions()
-      @removeClass 'loading'
-
-    @subscriber.subscribeToCommand atom.workspaceView, 'spark-dev:logout', =>
-      # Hide when user logs out
-      @close()
+    @disposables.add atom.commands.add 'atom-workspace',
+      'spark-dev:update-core-status': =>
+        # Show some progress when core's status is downloaded
+        @functionsList.empty()
+        @addClass 'loading'
+      'spark-dev:core-status-updated': =>
+        # Refresh UI when current core changes
+        @listFunctions()
+        @removeClass 'loading'
+      'spark-dev:logout': =>
+        # Hide when user logs out
+        @close()
 
     @listFunctions()
-
     @
 
   serialize: ->
@@ -50,30 +49,37 @@ class CloudFunctionsView extends View
   destroy: ->
     if @hasParent()
       @remove()
+    @disposables?.dispose()
 
   getTitle: ->
     'Cloud functions'
 
-  onDidChangeTitle: (callback) ->
-    @emitter.on 'did-change-title', callback
+  # TODO: Remove both of these post 1.0
+  onDidChangeTitle: (callback) -> new Disposable()
+  onDidChangeModified: (callback) -> new Disposable()
 
-  onDidChangeModified: (callback) ->
-    @emitter.on 'did-change-modified', callback
+  getPath: ->
+    'cloud-functions'
 
   getUri: ->
-    'spark-dev://editor/cloud-functions'
+    'spark-dev://editor/' + @getPath()
 
   close: ->
     pane = atom.workspace.paneForUri @getUri()
     pane?.destroy()
 
+  getParamsEditor: (row) ->
+    row.find('.spark-dev-mini-editor:eq(0)').view()
+
+  getResultEditor: (row) ->
+    row.find('.spark-dev-mini-editor:eq(1)').view()
+
   # Propagate table with functions
   listFunctions: ->
     functions = SettingsHelper.getLocal 'functions'
-
-    @functions.empty()
+    @functionsList.empty()
     if !functions || functions.length == 0
-      @functions.append $$ ->
+      @functionsList.append $$ ->
         @ul class: 'background-message', =>
           @li 'No functions registered'
     else
@@ -82,36 +88,40 @@ class CloudFunctionsView extends View
           @div 'data-id': func, =>
             @button class: 'btn icon icon-zap', func
             @span '('
-            @subview 'parameters', new TextEditorView(mini: true, placeholderText: 'Parameters')
+            @subview 'parameters', new MiniEditor('Parameters')
             @span ') == '
-            @subview 'result', new TextEditorView(mini: true, placeholderText: 'Result')
+            @subview 'result', new MiniEditor('Result')
             @span class: 'three-quarters inline-block hidden'
+
         row.find('button').on 'click', (event) =>
           @callFunction $(event.currentTarget).parent().attr('data-id')
-        row.find('.editor:eq(0)').view().on 'core:confirm', (event) =>
-          @callFunction $(event.currentTarget).parent().attr('data-id')
-        row.find('.editor:eq(1)').view().hiddenInput.attr 'disabled', 'disabled'
-        @functions.append row
+
+        @disposables.add atom.commands.add @getParamsEditor(row).editor.element,
+          'core:confirm': (event) =>
+            @callFunction $(event.currentTarget).parent().parent().attr('data-id')
+
+        @getResultEditor(row).setEnabled false
+        @functionsList.append row
 
   # Lock/unlock row
   setRowEnabled: (row, enabled) ->
     if enabled
       row.find('button').removeAttr 'disabled'
-      row.find('.editor:eq(0)').view().hiddenInput.removeAttr 'disabled'
+      @getParamsEditor(row).setEnabled true
       row.find('.three-quarters').addClass 'hidden'
     else
       row.find('button').attr 'disabled', 'disabled'
-      row.find('.editor:eq(0)').view().hiddenInput.attr 'disabled', 'disabled'
+      @getParamsEditor(row).setEnabled false
       row.find('.three-quarters').removeClass 'hidden'
-      row.find('.editor:eq(1)').view().removeClass 'icon icon-issue-opened'
+      @getResultEditor(row).removeClass 'icon icon-issue-opened'
 
   # Call function via cloud
   callFunction: (functionName) ->
     dfd = whenjs.defer()
     row = @find('#spark-dev-cloud-functions [data-id=' + functionName + ']')
     @setRowEnabled row, false
-    row.find('.editor:eq(1)').view().setText ' '
-    params = row.find('.editor:eq(0)').view().getText()
+    @getResultEditor(row).editor.setText ' '
+    params = @getParamsEditor(row).editor.getText()
     promise = spark.callFunction SettingsHelper.getLocal('current_core'), functionName, params
     promise.done (e) =>
       if !$.contains(document.documentElement, row[0])
@@ -120,18 +130,18 @@ class CloudFunctionsView extends View
       @setRowEnabled row, true
 
       if !!e.ok
-        row.find('.editor:eq(1)').view().addClass 'icon icon-issue-opened'
+        @getResultEditor(row).addClass 'icon icon-issue-opened'
         dfd.reject()
       else
-        row.find('.editor:eq(1)').view().setText e.return_value.toString()
+        @getResultEditor(row).editor.setText e.return_value.toString()
 
         dfd.resolve e.return_value
     , (e) =>
       if !$.contains(document.documentElement, row[0])
         return
-        
+
       @setRowEnabled row, true
-      row.find('.editor:eq(1)').view().addClass 'icon icon-issue-opened'
+      @getResultEditor(row).addClass 'icon icon-issue-opened'
 
       dfd.reject()
     dfd.promise

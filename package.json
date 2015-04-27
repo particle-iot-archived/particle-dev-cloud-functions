@@ -1,7 +1,7 @@
 {
   "name": "spark-dev-cloud-functions",
   "main": "./lib/spark-dev-cloud-functions",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Cloud functions panel for Spark Dev",
   "repository": "https://github.com/spark/spark-dev-cloud-functions",
   "license": "MIT",
@@ -9,10 +9,10 @@
     "atom": ">0.50.0"
   },
   "dependencies": {
+    "atom-space-pen-views": "^2.0.3",
     "when": "*",
-    "emissary": "1.x",
-    "event-kit": "0.7.2",
     "spark": "*",
-    "spark-dev-spec-stubs": "git://github.com/spark/spark-dev-spec-stubs.git#master"
+    "spark-dev-spec-stubs": "git://github.com/spark/spark-dev-spec-stubs.git#master",
+    "spark-dev-views": "git://github.com/spark/spark-dev-views.git#master"
   }
 }
