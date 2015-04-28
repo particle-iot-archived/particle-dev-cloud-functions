@@ -49,19 +49,19 @@ describe 'Cloud Functions View', ->
 
     it 'checks hiding and showing', ->
       SparkStub.stubSuccess spark, 'getVariable'
-      @sparkDevCloudFunctionsView = new SparkDevCloudFunctionsView(null, sparkDev)
-      @sparkDevCloudFunctionsView.setup()
+      sparkDevCloudFunctionsView = new SparkDevCloudFunctionsView(null, sparkDev)
+      sparkDevCloudFunctionsView.setup()
 
       # Tests spark-dev:update-core-status
-      spyOn @sparkDevCloudFunctionsView, 'listFunctions'
+      spyOn sparkDevCloudFunctionsView, 'listFunctions'
       atom.commands.dispatch workspaceElement, 'spark-dev:core-status-updated'
-      expect(@sparkDevCloudFunctionsView.listFunctions).toHaveBeenCalled()
-      jasmine.unspy @sparkDevCloudFunctionsView, 'listFunctions'
+      expect(sparkDevCloudFunctionsView.listFunctions).toHaveBeenCalled()
+      jasmine.unspy sparkDevCloudFunctionsView, 'listFunctions'
 
       # Tests spark-dev:logout
       SettingsHelper.clearCredentials()
-      spyOn @sparkDevCloudFunctionsView, 'close'
+      spyOn sparkDevCloudFunctionsView, 'close'
       atom.commands.dispatch workspaceElement, 'spark-dev:logout'
-      expect(@sparkDevCloudFunctionsView.close).toHaveBeenCalled()
-      jasmine.unspy @sparkDevCloudFunctionsView, 'close'
-      @sparkDevCloudFunctionsView.detach()
+      expect(sparkDevCloudFunctionsView.close).toHaveBeenCalled()
+      jasmine.unspy sparkDevCloudFunctionsView, 'close'
+      sparkDevCloudFunctionsView.detach()
