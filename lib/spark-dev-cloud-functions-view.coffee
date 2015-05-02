@@ -7,7 +7,7 @@ SettingsHelper = null
 Subscriber = null
 spark = null
 sparkDev = null
-MiniEditor = null
+MiniEditorView = null
 
 module.exports =
 class CloudFunctionsView extends View
@@ -20,7 +20,7 @@ class CloudFunctionsView extends View
 
   setup: ->
     {$, $$} = require 'atom-space-pen-views'
-    {MiniEditor} = require 'spark-dev-views'
+    {MiniEditorView} = require 'spark-dev-views'
 
     SettingsHelper = sparkDev.SettingsHelper
     spark = require 'spark'
@@ -69,10 +69,10 @@ class CloudFunctionsView extends View
     pane?.destroy()
 
   getParamsEditor: (row) ->
-    row.find('.spark-dev-mini-editor:eq(0)').view()
+    row.find('.spark-dev-mini-editor-view:eq(0)').view()
 
   getResultEditor: (row) ->
-    row.find('.spark-dev-mini-editor:eq(1)').view()
+    row.find('.spark-dev-mini-editor-view:eq(1)').view()
 
   # Propagate table with functions
   listFunctions: ->
@@ -88,9 +88,9 @@ class CloudFunctionsView extends View
           @div 'data-id': func, =>
             @button class: 'btn icon icon-zap', func
             @span '('
-            @subview 'parameters', new MiniEditor('Parameters')
+            @subview 'parameters', new MiniEditorView('Parameters')
             @span ') == '
-            @subview 'result', new MiniEditor('Result')
+            @subview 'result', new MiniEditorView('Result')
             @span class: 'three-quarters inline-block hidden'
 
         row.find('button').on 'click', (event) =>

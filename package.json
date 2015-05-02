@@ -1,7 +1,7 @@
 {
   "name": "spark-dev-cloud-functions",
   "main": "./lib/spark-dev-cloud-functions",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Cloud functions panel for Spark Dev",
   "repository": "https://github.com/spark/spark-dev-cloud-functions",
   "license": "MIT",
@@ -13,6 +13,6 @@
     "when": "*",
     "spark": "*",
     "spark-dev-spec-stubs": "git://github.com/spark/spark-dev-spec-stubs.git#master",
-    "spark-dev-views": "git://github.com/spark/spark-dev-views.git#master"
+    "spark-dev-views": "git://github.com/spark/spark-dev-views.git#v0.0.2"
   }
 }
