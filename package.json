@@ -11,7 +11,7 @@
   "dependencies": {
     "atom-space-pen-views": "^2.0.3",
     "when": "*",
-    "spark": "*",
+    "spark": "^0.5.9",
     "spark-dev-spec-stubs": "git://github.com/spark/spark-dev-spec-stubs.git#master",
     "spark-dev-views": "git://github.com/spark/spark-dev-views.git#v0.0.2"
   }
