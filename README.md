@@ -1,1 +1,1 @@
-# Cloud functions panel for Spark Dev
+# Cloud functions panel for Particle Dev
