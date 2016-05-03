@@ -6,38 +6,38 @@ $$ = null
 SettingsHelper = null
 Subscriber = null
 spark = null
-sparkDev = null
+particleDev = null
 MiniEditorView = null
 
 module.exports =
 class CloudFunctionsView extends View
   @content: ->
-    @div id: 'spark-dev-cloud-functions-container', =>
-      @div id: 'spark-dev-cloud-functions', outlet: 'functionsList'
+    @div id: 'particle-dev-cloud-functions-container', =>
+      @div id: 'particle-dev-cloud-functions', outlet: 'functionsList'
 
   initialize: (serializeState, mainModule) ->
-    sparkDev = mainModule
+    particleDev = mainModule
 
   setup: ->
     {$, $$} = require 'atom-space-pen-views'
-    {MiniEditorView} = require 'spark-dev-views'
+    {MiniEditorView} = require 'particle-dev-views'
 
-    SettingsHelper = sparkDev.SettingsHelper
+    SettingsHelper = particleDev.SettingsHelper
     spark = require 'spark'
     spark.login { accessToken: SettingsHelper.get('access_token') }
 
     @disposables = new CompositeDisposable
 
     @disposables.add atom.commands.add 'atom-workspace',
-      'spark-dev:update-core-status': =>
+      'particle-dev:update-core-status': =>
         # Show some progress when core's status is downloaded
         @functionsList.empty()
         @addClass 'loading'
-      'spark-dev:core-status-updated': =>
+      'particle-dev:core-status-updated': =>
         # Refresh UI when current core changes
         @listFunctions()
         @removeClass 'loading'
-      'spark-dev:logout': =>
+      'particle-dev:logout': =>
         # Hide when user logs out
         @close()
 
@@ -62,17 +62,17 @@ class CloudFunctionsView extends View
     'cloud-functions'
 
   getUri: ->
-    'spark-dev://editor/' + @getPath()
+    'particle-dev://editor/' + @getPath()
 
   close: ->
     pane = atom.workspace.paneForUri @getUri()
     pane?.destroy()
 
   getParamsEditor: (row) ->
-    row.find('.spark-dev-mini-editor-view:eq(0)').view()
+    row.find('.particle-dev-mini-editor-view:eq(0)').view()
 
   getResultEditor: (row) ->
-    row.find('.spark-dev-mini-editor-view:eq(1)').view()
+    row.find('.particle-dev-mini-editor-view:eq(1)').view()
 
   # Propagate table with functions
   listFunctions: ->
@@ -118,7 +118,7 @@ class CloudFunctionsView extends View
   # Call function via cloud
   callFunction: (functionName) ->
     dfd = whenjs.defer()
-    row = @find('#spark-dev-cloud-functions [data-id=' + functionName + ']')
+    row = @find('#particle-dev-cloud-functions [data-id=' + functionName + ']')
     @setRowEnabled row, false
     @getResultEditor(row).editor.setText ' '
     params = @getParamsEditor(row).editor.getText()

@@ -1,26 +1,26 @@
-SparkDevCloudFunctions = require '../lib/spark-dev-cloud-functions'
+ParticleDevCloudFunctions = require '../lib/cloud-functions'
 
 # Use the command `window:run-package-specs` (cmd-alt-ctrl-p) to run specs.
 #
 # To run a specific `it` or `describe` block add an `f` to the front (e.g. `fit`
 # or `fdescribe`). Remove the `f` to unfocus the block.
 
-describe "SparkDevCloudFunctions", ->
+describe "ParticleDevCloudFunctions", ->
   activationPromise = null
-  sparkDevPromise = null
+  particleDevPromise = null
 
   beforeEach ->
     workspaceElement = atom.views.getView(atom.workspace)
 
-  describe "when Spark Dev package is activated", ->
+  describe "when Particle Dev package is activated", ->
     it "sets up variables, openers and commands", ->
       spyOn atom.workspace, 'addOpener'
 
-      sparkDevPromise = atom.packages.activatePackage('spark-dev')
-      activationPromise = atom.packages.activatePackage('spark-dev-cloud-functions')
+      particleDevPromise = atom.packages.activatePackage('particle-dev')
+      activationPromise = atom.packages.activatePackage('particle-dev-cloud-functions')
 
       waitsForPromise ->
-        sparkDevPromise
+        particleDevPromise
 
       runs ->
         expect(atom.workspace.addOpener).toHaveBeenCalled()
