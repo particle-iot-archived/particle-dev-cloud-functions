@@ -11,9 +11,9 @@ module.exports =
     @workspaceElement = atom.views.getView(atom.workspace)
 
     atom.packages.activatePackage('particle-dev').then ({mainModule}) =>
+      @main = mainModule
       # Any Particle Dev dependent code should be placed here
-      particleDev = mainModule
-      @particleDevCloudFunctionsView = new ParticleDevCloudFunctionsView(state.particleDevCloudFunctionsViewState, particleDev)
+      @particleDevCloudFunctionsView = new ParticleDevCloudFunctionsView(state.particleDevCloudFunctionsViewState, @main)
 
       url = require 'url'
       atom.workspace.addOpener (uriToOpen) =>
@@ -23,15 +23,15 @@ module.exports =
       @disposables.add atom.commands.add 'atom-workspace',
         'particle-dev:append-menu': =>
           # Add itself to menu if user is authenticated
-          if particleDev.SettingsHelper.isLoggedIn()
-            particleDev.MenuManager.append [
+          if @main.profileManager.isLoggedIn
+            @main.MenuManager.append [
               {
                 label: 'Show cloud functions',
                 command: 'particle-dev-cloud-functions-view:show-cloud-functions'
               }
             ]
         'particle-dev-cloud-functions-view:show-cloud-functions': =>
-          particleDev.openPane @particleDevCloudFunctionsView.getPath()
+          @main.openPane @particleDevCloudFunctionsView.getPath()
 
       atom.commands.dispatch @workspaceElement, 'particle-dev:update-menu'
 

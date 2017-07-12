@@ -3,10 +3,8 @@
 whenjs = require 'when'
 $ = null
 $$ = null
-SettingsHelper = null
 Subscriber = null
 spark = null
-particleDev = null
 MiniEditorView = null
 
 module.exports =
@@ -15,16 +13,14 @@ class CloudFunctionsView extends View
     @div id: 'particle-dev-cloud-functions-container', =>
       @div id: 'particle-dev-cloud-functions', outlet: 'functionsList'
 
-  initialize: (serializeState, mainModule) ->
-    particleDev = mainModule
+  initialize: (serializeState, @main) ->
 
   setup: ->
     {$, $$} = require 'atom-space-pen-views'
     {MiniEditorView} = require 'particle-dev-views'
 
-    SettingsHelper = particleDev.SettingsHelper
     spark = require 'spark'
-    spark.login { accessToken: SettingsHelper.get('access_token') }
+    spark.login { accessToken: @main.profileManager.accessToken }
 
     @disposables = new CompositeDisposable
 
@@ -76,7 +72,7 @@ class CloudFunctionsView extends View
 
   # Propagate table with functions
   listFunctions: ->
-    functions = SettingsHelper.getLocal 'functions'
+    functions = @main.profileManager.getLocal 'functions'
     @functionsList.empty()
     if !functions || functions.length == 0
       @functionsList.append $$ ->
@@ -122,7 +118,7 @@ class CloudFunctionsView extends View
     @setRowEnabled row, false
     @getResultEditor(row).editor.setText ' '
     params = @getParamsEditor(row).editor.getText()
-    promise = spark.callFunction SettingsHelper.getLocal('current_core'), functionName, params
+    promise = spark.callFunction @main.profileManager.currentDevice.id, functionName, params
     promise.done (e) =>
       if !$.contains(document.documentElement, row[0])
         return
@@ -131,6 +127,7 @@ class CloudFunctionsView extends View
 
       if !!e.ok
         @getResultEditor(row).addClass 'icon icon-issue-opened'
+        console.error 'Error calling a function', e
         dfd.reject()
       else
         @getResultEditor(row).editor.setText e.return_value.toString()
