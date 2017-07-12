@@ -1,7 +1,7 @@
 {
   "name": "particle-dev-cloud-functions",
   "main": "./lib/cloud-functions",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cloud functions panel for Particle Dev",
   "repository": "https://github.com/spark/particle-dev-cloud-functions",
   "license": "MIT",
